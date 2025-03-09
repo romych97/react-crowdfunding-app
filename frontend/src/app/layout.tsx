@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: any;
 }>) {
   return (
     <html lang="en">

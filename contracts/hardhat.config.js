@@ -3,6 +3,8 @@ require("dotenv").config();
 
 const providerApiKey = process.env.ALCHEMY_API_KEY;
 const etherscanApiKey = process.env.ETHERSCAN_MAINNET_API_KEY;
+// const etherscanOptimisticApiKey = process.env.ETHERSCAN_OPTIMISTIC_API_KEY;
+// const basescanApiKey = process.env.BASESCAN_API_KEY;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

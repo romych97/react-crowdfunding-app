@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { writeContract } from '@wagmi/core'
+import { useWriteContract } from 'wagmi'
 import { useAccount } from "wagmi";
 
 import { config } from '@/lib/wagmiConfig';
@@ -11,11 +11,13 @@ export default function CreateCampaign() {
     const [title, setTitle] = useState("");
     const [goal, setGoal] = useState("");
 
+    const { writeContract } = useWriteContract()
     const { isConnected, address } = useAccount();
+
     console.log("🚀 ~ CreateCampaign ~ address:", address)
     console.log("🚀 ~ CreateCampaign ~ isConnected:", isConnected)
 
-    const createCampaign = async () => {
+    const createCampaign = () => {
 
         if (!isConnected) {
             alert("Please connect your wallet first!");
@@ -23,7 +25,7 @@ export default function CreateCampaign() {
         }
 
         try {
-            const result = await writeContract(config, {
+            const result = writeContract({
                 address: '0x1575054d52dD5B1B51536B04Fb9A4aEe8C6eF61d',
                 abi: crowdfundingAbiJson.abi,
                 functionName: 'createCampaign',

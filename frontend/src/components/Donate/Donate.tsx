@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { writeContract } from '@wagmi/core'
-import { config } from '@/lib/wagmiConfig';
+import { useWriteContract } from 'wagmi'
 import crowdfundingAbiJson from '@/lib/crowdfundingAbi.json';
 
 export default function Donate() {
@@ -10,15 +9,17 @@ export default function Donate() {
     const [amount, setAmount] = useState("");
     const [campaignId, setCampaignId] = useState("");
 
+    const { writeContract } = useWriteContract()
+
     const donateToCampaign = async (campaignId: any, amount: string) => {
         try {
-            const result = await writeContract(config, {
+            const result = writeContract({
                 address: '0x1575054d52dD5B1B51536B04Fb9A4aEe8C6eF61d',
                 abi: crowdfundingAbiJson.abi,
                 functionName: "donateToCampaign",
                 args: [campaignId],
-                value: BigInt(amount), // summ in wei
-            });
+                value: BigInt(amount), // sum in wei
+            })
 
             console.log("🚀 Donation successful:", result);
         } catch (error) {
