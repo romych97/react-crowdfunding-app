@@ -7,37 +7,46 @@ import { Physics, useCylinder } from "@react-three/cannon";
 import Donate from "@/components/Donate/Donate";
 import WalletConnector from "@/components/Login/WalletConnector";
 
-// 🔹 Компонент монеты
+// 🔹 Coin component
 const Coin = ({ position }: any) => {
   const texture = new THREE.TextureLoader().load("./bitcoin-texture.png");
+
   const [coinRef, api] = useCylinder(() => ({
     mass: 1,
-    position,
+    position: [position[0], position[1], 0],
     args: [1.5, 1.5, 0.01, 32],
-    velocity: [(Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6, 0], // Движение в 2D
-    angularVelocity: [Math.random(), Math.random(), 0], // Вращение
-    restitution: 1, // Полный отскок
-    friction: 0, // Без трения
-    linearDamping: 0.1, // Замедление
+    velocity: [(Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3, 0],
+    angularVelocity: [0, 0, Math.random()],
+    restitution: 0.9, // Almost a springy blow (slightly less than 1 for stability)
+    friction: 0.01, // Minimal friction for slowdown
+    linearDamping: 0.05, // Smooth speed fade
+    sleepSpeedLimit: 0.1, // Speed ​​threshold for "falling asleep"
+    sleepTimeLimit: 1, // Time before transition to "sleep"
+    collisionFilterGroup: 1, // Collision group
+    collisionFilterMask: 1, // Collision only with similar objects
   }));
 
   useEffect(() => {
-    if (!coinRef.current) return;
+    const handleCollision = async () => {
+      const position = await new Promise((resolve) => {
+        api.position.subscribe(resolve);
+      });
 
-    // Получаем позицию монеты через API
-    api.position.subscribe(([x, y]) => {
-      const boundaryX = window.innerWidth / 200 - 0.5;
-      const boundaryY = window.innerHeight / 200 - 0.5;
+      const [x, y] = position as any;
+      const boundaryX = window.innerWidth / 200;
+      const boundaryY = window.innerHeight / 200;
 
-      // Если монета выходит за границы — меняем направление
       if (x > boundaryX || x < -boundaryX) {
-        api.velocity.set(-Math.sign(x) * Math.abs(x) * 0.5, Math.random() * 6 - 3, 0);
+        api.velocity.set(-Math.sign(x) * 2, (Math.random() - 0.5) * 3, 0);
       }
       if (y > boundaryY || y < -boundaryY) {
-        api.velocity.set(Math.random() * 6 - 3, -Math.sign(y) * Math.abs(y) * 0.5, 0);
+        api.velocity.set((Math.random() - 0.5) * 3, -Math.sign(y) * 2, 0);
       }
-    });
-  }, []);
+    };
+
+    const interval = setInterval(handleCollision, 100);
+    return () => clearInterval(interval);
+  }, [api.position, api.velocity]);
 
   return (
     <mesh ref={coinRef}>
@@ -47,7 +56,8 @@ const Coin = ({ position }: any) => {
   );
 };
 
-// 🔹 Основной компонент сцены
+
+// 🔹 Main scene component
 const CoinScene = () => {
   const [size, setSize] = useState({ width: 10, height: 6 });
 
@@ -69,7 +79,11 @@ const CoinScene = () => {
   }));
 
   return (
-    <Canvas style={{ width: "100vw", height: "100vh" }} camera={{ position: [0, 0, 10] }}>
+    <Canvas
+      orthographic
+      camera={{ position: [0, 0, 10], zoom: 108 }}
+      style={{ width: "100vw", height: "100vh" }}
+    >
       <Physics gravity={[0, 0, 0]}>
         <ambientLight intensity={0.2} />
         <pointLight position={[10, 10, 10]} />
@@ -81,20 +95,24 @@ const CoinScene = () => {
   );
 };
 
-// Главная страница
+
+
+// Main page
 export default function Home() {
   return (
     <div className="w-full h-[100vh]">
-      <main className="flex flex-col items-center">
+      <main className="flex flex-col items-center justify-center w-full h-full z-50">
         <div>
-          <Donate />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Decentralized Crowdfunding</h1>
-          <WalletConnector />
+          <div>
+            <Donate />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Decentralized Crowdfunding</h1>
+            <WalletConnector />
+          </div>
         </div>
       </main>
-      <div className="absolute left-0 top-0">
+      <div className="absolute left-0 top-0 z-[-1]">
         <CoinScene />
       </div>
     </div>

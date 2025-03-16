@@ -1,4 +1,4 @@
-'use client';  // Это клиентский компонент
+'use client';
 
 import { WagmiProvider } from 'wagmi';
 import { config } from '../lib/wagmiConfig';
